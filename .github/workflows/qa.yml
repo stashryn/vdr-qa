@@ -1,0 +1,31 @@
+name: qa
+on:
+  workflow_dispatch:
+  push:
+defaults:
+  run:
+    working-directory: vdr-qa
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
+      WEB_URL: ${{ secrets.WEB_URL }}
+      OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+      OWNER_PASSWORD: ${{ secrets.OWNER_PASSWORD }}
+      VIEWER_EMAIL: ${{ secrets.VIEWER_EMAIL }}
+      VIEWER_PASSWORD: ${{ secrets.VIEWER_PASSWORD }}
+      OWNER_ROOM_ID: ${{ secrets.OWNER_ROOM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report
+          path: vdr-qa/playwright-report
